@@ -13,4 +13,4 @@ Contoh source code web service dengan bahasa pemrogaman Python
 - Buat python virtual environment dan install required modules. Double-click `create_env.bat`
 - Edit koneksi database di file `application.py`
 - Jalankan development server. Double-click `start_server.bat`
-- Buka alamat [http://127.0.0.1:5001](http://127.0.0.1:5001) di browser
+- Buka alamat [http://127.0.0.1:5000](http://127.0.0.1:5000) di browser
