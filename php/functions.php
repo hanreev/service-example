@@ -44,7 +44,10 @@ function executeSQL(string $sql, array $parameters = [])
 function getGeoJson(string $table)
 {
     $sql = "SELECT row_to_json(fc) AS geojson FROM (SELECT 'FeatureCollection' AS type, array_to_json(array_agg(ft.f::json)) AS features FROM (SELECT ST_AsGeoJSON(t.*) AS f FROM $table AS t) AS ft) AS fc";
-    $statement = executeSQL($sql, []);
+
+    // Call executeSQL function defined above
+    $statement = executeSQL($sql);
+
     if ($statement) {
         return $statement->fetch()['geojson'];
     }
