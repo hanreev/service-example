@@ -21,3 +21,4 @@ Contoh source code web service dengan bahasa pemrogaman PHP
   php -S 127.0.0.1:8000
   ```
 - Buka alamat [http://127.0.0.1:8000](http://127.0.0.1:8000) di browser
+- Contoh implementasi penggunaan web service menggunakan HTML ada di file `index.php`

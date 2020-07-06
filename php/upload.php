@@ -1,17 +1,27 @@
 <?php
 
+// Set default Content-Type header
 header('Content-Type: text/plain; charset=utf-8');
 
+// Set file key
 $key = 'image';
-$saveDir = __DIR__.'/uploads';
 
-// Create save directory if not exists
-if (!file_exists($saveDir)) {
-    mkdir($saveDir, 0777, true);
+// Set maximum file size to 10MB
+$maxSize = 10 * 1024 * 1024;
+
+// Set upload folder
+$uploadDirectory = __DIR__.'/uploads';
+
+// Create upload folder if not exists
+if (!file_exists($uploadDirectory)) {
+    mkdir($uploadDirectory, 0777, true);
 }
 
 try {
+    // Get temporary uploaded file
     $uploadedFile = $_FILES[$key];
+
+    // Check file errors
     if (
         !isset($uploadedFile['error']) ||
         is_array($uploadedFile['error'])
@@ -31,39 +41,43 @@ try {
             throw new RuntimeException('Unknown errors.');
     }
 
-    if ($uploadedFile['size'] > 2 * 1024 * 1024) {
+    // Check file size
+    if ($uploadedFile['size'] > $maxSize) {
         throw new RuntimeException('Exceeded filesize limit.');
     }
 
+    // Check file mime type and extension
     $finfo = new finfo(FILEINFO_MIME_TYPE);
     if (false === $ext = array_search(
         $finfo->file($uploadedFile['tmp_name']),
         [
             'jpg' => 'image/jpeg',
             'png' => 'image/png',
-            'gif' => 'image/gif',
         ],
         true
     )) {
         throw new RuntimeException('Invalid file format.');
     }
 
+    // Set new filename
     $filename = sprintf('%s/%s.%s',
-                    $saveDir,
+                    $uploadDirectory,
                     sha1_file($uploadedFile['tmp_name']),
                     $ext
                 );
 
+    // Check for duplicate
     if (file_exists($filename)) {
         echo 'File already exists.';
 
         exit;
     }
 
+    // Save temporary uploaded file
     if (!move_uploaded_file(
         $uploadedFile['tmp_name'],
         sprintf('%s/%s.%s',
-            $saveDir,
+            $uploadDirectory,
             sha1_file($uploadedFile['tmp_name']),
             $ext
         )
@@ -71,6 +85,7 @@ try {
         throw new RuntimeException('Failed to move uploaded file.');
     }
 
+    echo $filename;
     echo 'File is uploaded successfully.';
 } catch (RuntimeException $e) {
     echo $e->getMessage();
