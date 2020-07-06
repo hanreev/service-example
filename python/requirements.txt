@@ -5,5 +5,4 @@ pycodestyle
 
 # Requirements
 Flask
-Pillow
 psycopg2-binary

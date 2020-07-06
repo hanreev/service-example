@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
+
 import json
 import os
 
 import psycopg2
-from flask import Flask, Response, abort, make_response, redirect, render_template, request, send_from_directory
+from flask import Flask, Response, abort, redirect, render_template, request, send_from_directory
 from werkzeug.utils import secure_filename
 
 # Define global variable

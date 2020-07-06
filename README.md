@@ -16,4 +16,4 @@ Contoh source code web service dengan bahasa pemrogaman [PHP](php) dan [Python](
   - [Python](python/README.md)
 - Untuk meng-_update_ repositori lokal:
   - Klik `Fetch origin` di bagian atas aplikasi GitHub Desktop
-  - Klik `Pull` (hanya muncul ketika ada _update source code_)
+  - Klik `Pull origin` (hanya muncul ketika ada _update source code_)
