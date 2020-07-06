@@ -26,7 +26,7 @@ def upload():
     if key not in request.files:
         return Response('Invalid request', status=400, headers={'Content-Type': 'text/plain; charset=utf-8'})
 
-    upload_dir = os.path.join(BASE_DIR, 'upload')
+    upload_dir = os.path.join(BASE_DIR, 'uploads')
     os.makedirs(upload_dir, exist_ok=True)
 
     image = request.files.get(key)

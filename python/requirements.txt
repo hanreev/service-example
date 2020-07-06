@@ -1,0 +1,9 @@
+# IDE requirements
+autopep8
+pylint
+pycodestyle
+
+# Requirements
+Flask
+Pillow
+psycopg2-binary

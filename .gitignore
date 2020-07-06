@@ -1,2 +1,5 @@
-__pycache__
+php/uploads
+
 python/env
+python/uploads
+__pycache__
