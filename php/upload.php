@@ -85,8 +85,8 @@ try {
         throw new RuntimeException('Failed to move uploaded file.');
     }
 
-    echo $filename;
-    echo 'File is uploaded successfully.';
+    header('Location: /');
+    echo 'File is uploaded successfully. '.$filename;
 } catch (RuntimeException $e) {
     echo $e->getMessage();
 }
