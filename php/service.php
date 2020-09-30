@@ -8,7 +8,7 @@ $action = $_REQUEST['action'];
 
 if ($action == 'getGeojson') {
     header('Content-Type: application/json');
-    $geojsonTable = $_POST['geojsonTable'];
+    $geojsonTable = $_REQUEST['geojsonTable'];
     $geojson = getGeoJson($geojsonTable);
     if ($geojson) {
         echo $geojson;
@@ -17,6 +17,8 @@ if ($action == 'getGeojson') {
         echo json_encode(['error' => 'Invalid table name.']);
     }
 } elseif ($action == 'addFeature') {
+    header('Content-Type: application/json');
+
     $tableName = $_POST['tableName'];
     $keys = $_POST['keys'];
     $values = $_POST['values'];
@@ -27,10 +29,50 @@ if ($action == 'getGeojson') {
     }
 
     $result = addFeature($tableName, $attributes);
+
     if ($result->errorCode()) {
-        var_dump($result->errorInfo());
+        header('HTTP/1.0 500 Server Error');
+        echo json_encode(['error' => $result->errorInfo()]);
     } else {
-        echo 'Feature has been added successfully.';
+        echo json_encode($attributes);
+    }
+} elseif ($action == 'indexKerusakan') {
+    header('Content-Type: application/json');
+
+    echo json_encode(listData('NAMA_TABEL'));
+} elseif ($action == 'inputKerusakan') {
+    header('Content-Type: application/json');
+
+    try {
+        // Handle image upload
+        $filename = uploadImage('gambar');
+
+        // Assign attributes
+        $attributes = [
+            'kondisi' => $_REQUEST['kondisi'],
+            'keterangan' => $_REQUEST['keterangan'],
+            'lat' => $_REQUEST['lat'],
+            'long' => $_REQUEST['long'],
+            'gambar' => $filename,
+        ];
+
+        // Cleanup empty attributes
+        foreach ($attributes as $key => $value) {
+            if (empty($value)) {
+                unset($attributes[$key]);
+            }
+        }
+
+        // Input data into the database
+        if (inputData('NAMA_TABEL', $attributes)) {
+            echo json_encode($attributes);
+        } else {
+            header('HTTP/1.0 500 Server Error');
+            echo json_encode(['error' => 'Tidak dapat menginput data']);
+        }
+    } catch (\Throwable $th) {
+        header('HTTP/1.0 500 Server Error');
+        echo json_encode(['error' => $th->getMessage()]);
     }
 } else {
     header('HTTP/1.0 400 Bad Request');

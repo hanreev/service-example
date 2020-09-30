@@ -60,11 +60,17 @@
         </li>
         <li>
             <p>Uploaded images:</p>
-            <?php foreach (scandir(__DIR__.'/uploads') ?: [] as $filename): ?>
+            <?php
+            $uploadDir = __DIR__.'/uploads';
+            if (file_exists($uploadDir)):
+            foreach (scandir(__DIR__.'/uploads') ?: [] as $filename):?>
                 <?php if (!in_array($filename, ['.', '..'])): ?>
                     <img src="/uploads/<?php echo $filename; ?>" style="width: 200px; margin: 0 4px;">
                 <?php endif; ?>
-            <?php endforeach; ?>
+            <?php
+            endforeach;
+            endif;
+            ?>
         </li>
       </ul>
     </div>

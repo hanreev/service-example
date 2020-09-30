@@ -76,11 +76,7 @@ try {
     // Save temporary uploaded file
     if (!move_uploaded_file(
         $uploadedFile['tmp_name'],
-        sprintf('%s/%s.%s',
-            $uploadDirectory,
-            sha1_file($uploadedFile['tmp_name']),
-            $ext
-        )
+        $filename
     )) {
         throw new RuntimeException('Failed to move uploaded file.');
     }

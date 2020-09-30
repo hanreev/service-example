@@ -7,7 +7,7 @@ $host = '127.0.0.1';
 $port = 5432;
 $user = 'postgres';
 $password = '1';
-$dbname = 'kmp_gisweb'; // nama database
+$dbname = 'db_mamberamo_tengah'; // nama database
 $dsn = "pgsql:dbname=$dbname;host=$host;port=$port";
 
 // Membuat koneksi ke database
@@ -106,4 +106,138 @@ function editFeature(string $table, int $gid, array $attributes = [])
     $parameters[':gid'] = $gid;
 
     return executeSQL($sql, $parameters);
+}
+
+function listData(string $table)
+{
+    $statement = executeSQL("SELECT * FROM $table");
+
+    if ($statement) {
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    return [];
+}
+
+function inputData(string $table, array $attributes)
+{
+    $keys = array_keys($attributes);
+    $placeholders = array_map(function ($k) {
+        return ":$k";
+    }, $keys);
+
+    $sql = "INSERT INTO $table (".implode(', ', $keys).') VALUES ('.implode(', ', $placeholders).')';
+
+    $parameters = [];
+    foreach ($attributes as $k => $v) {
+        $parameters[":$k"] = $v;
+    }
+
+    return executeSQL($sql, $parameters);
+}
+
+function getFiles(string $key)
+{
+    // Get temporary uploaded files
+    $files = $_FILES[$key];
+
+    // If files is null return empty array
+    if (!$files) {
+        return [];
+    }
+
+    // If files only contains one item return array of files
+    if (!is_array($files['name'])) {
+        return [$files];
+    }
+
+    // Remap files array
+    $result = [];
+    $count = count($files['name']);
+    $keys = array_keys($files);
+    for ($i = 0; $i < $count; $i++) {
+        $result[$i] = [];
+        foreach ($keys as $key) {
+            $result[$i][$key] = $files[$key][$i];
+        }
+    }
+
+    return $result;
+}
+
+function uploadImage($key = 'image')
+{
+    // Set maximum file size to 10MB
+    $maxSize = 10 * 1024 * 1024;
+
+    // Set upload folder
+    $uploadDirectory = __DIR__.'/uploads';
+
+    // Create upload folder if not exists
+    if (!file_exists($uploadDirectory)) {
+        mkdir($uploadDirectory, 0777, true);
+    }
+
+    // Get temporary uploaded file
+    $uploadedFile = $_FILES[$key];
+
+    // Check file errors
+    if (
+        !isset($uploadedFile['error']) ||
+        is_array($uploadedFile['error'])
+    ) {
+        throw new RuntimeException('Invalid parameters.');
+    }
+
+    switch ($uploadedFile['error']) {
+        case UPLOAD_ERR_OK:
+            break;
+        case UPLOAD_ERR_NO_FILE:
+            throw new RuntimeException('No file sent.');
+        case UPLOAD_ERR_INI_SIZE:
+        case UPLOAD_ERR_FORM_SIZE:
+            throw new RuntimeException('Exceeded filesize limit.');
+        default:
+            throw new RuntimeException('Unknown errors.');
+    }
+
+    // Check file size
+    if ($uploadedFile['size'] > $maxSize) {
+        throw new RuntimeException('Exceeded filesize limit.');
+    }
+
+    // Check file mime type and extension
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    if (false === $ext = array_search(
+        $finfo->file($uploadedFile['tmp_name']),
+        [
+            'jpg' => 'image/jpeg',
+            'png' => 'image/png',
+        ],
+        true
+    )) {
+        throw new RuntimeException('Invalid file format.');
+    }
+
+    // Set new filename
+    $filename = sprintf('%s/%s.%s',
+                    $uploadDirectory,
+                    sha1_file($uploadedFile['tmp_name']),
+                    $ext
+                );
+
+    // Check for duplicate
+    if (file_exists($filename)) {
+        throw new RuntimeException('File already exists.');
+    }
+
+    // Save temporary uploaded file
+    if (!move_uploaded_file(
+        $uploadedFile['tmp_name'],
+        $filename
+    )) {
+        throw new RuntimeException('Failed to move uploaded file.');
+    }
+
+    return $filename;
 }
