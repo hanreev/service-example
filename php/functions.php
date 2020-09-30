@@ -1,5 +1,8 @@
 <?php
 
+define('PUBLIC_DIR', __DIR__);
+define('UPLOAD_DIR', PUBLIC_DIR.'/uploads');
+
 /**
  * PostgreSQL connection.
  */
@@ -170,12 +173,9 @@ function uploadImage($key = 'image')
     // Set maximum file size to 10MB
     $maxSize = 10 * 1024 * 1024;
 
-    // Set upload folder
-    $uploadDirectory = __DIR__.'/uploads';
-
     // Create upload folder if not exists
-    if (!file_exists($uploadDirectory)) {
-        mkdir($uploadDirectory, 0777, true);
+    if (!file_exists(UPLOAD_DIR)) {
+        mkdir(UPLOAD_DIR, 0777, true);
     }
 
     // Get temporary uploaded file
@@ -220,15 +220,16 @@ function uploadImage($key = 'image')
     }
 
     // Set new filename
-    $filename = sprintf('%s/%s.%s',
-                    $uploadDirectory,
+    $filename = sprintf(
+                    '%s/%s.%s',
+                    UPLOAD_DIR,
                     sha1_file($uploadedFile['tmp_name']),
                     $ext
                 );
 
     // Check for duplicate
     if (file_exists($filename)) {
-        throw new RuntimeException('File already exists.');
+        return $filename;
     }
 
     // Save temporary uploaded file

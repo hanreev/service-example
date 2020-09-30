@@ -47,6 +47,9 @@ if ($action == 'getGeojson') {
         // Handle image upload
         $filename = uploadImage('gambar');
 
+        // Get relative path
+        $filename = preg_replace('/^'.preg_quote(PUBLIC_DIR, '/').'\//', '', $filename);
+
         // Assign attributes
         $attributes = [
             'kondisi' => $_REQUEST['kondisi'],
