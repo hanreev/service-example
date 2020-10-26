@@ -37,16 +37,41 @@ function executeSQL(string $sql, array $parameters = [])
     return $statement;
 }
 
+function getColumns(string $table)
+{
+    $sql = "SELECT column_name FROM information_schema.columns WHERE table_name='$table'";
+
+    // Call executeSQL function defined above
+    $statement = executeSQL($sql);
+
+    $columns = [];
+    if ($statement) {
+        foreach ($statement->fetchAll(PDO::FETCH_ASSOC) as $record) {
+            $columns[] = $record['column_name'];
+        }
+    }
+
+    return $columns;
+}
+
 /**
  * Get GeoJSON output from the spatial table.
  *
- * @param string $table Spatial table name
+ * @param string $table      Spatial table name
+ * @param array  $attributes
  *
  * @return string|null
  */
 function getGeoJson(string $table)
 {
-    $sql = "SELECT row_to_json(fc) AS geojson FROM (SELECT 'FeatureCollection' AS type, array_to_json(array_agg(ft.f::json)) AS features FROM (SELECT ST_AsGeoJSON(t.*) AS f FROM $table AS t) AS ft) AS fc";
+    $columns = getColumns($table);
+    $attributes = implode(',', array_diff($columns, ['geom']));
+
+    $sql = "SELECT row_to_json(fc) AS geojson FROM (
+                SELECT 'FeatureCollection' AS type, array_to_json(array_agg(f)) AS features FROM (
+                    SELECT 'Feature' AS type, ST_AsGeoJSON(lg.geom)::json AS geometry, row_to_json((SELECT l FROM (SELECT $attributes) AS l)) AS properties FROM $table AS lg
+                ) AS f
+            ) AS fc";
 
     // Call executeSQL function defined above
     $statement = executeSQL($sql);
@@ -137,6 +162,13 @@ function inputData(string $table, array $attributes)
     }
 
     return executeSQL($sql, $parameters);
+}
+
+function deleteData(string $table, string $idColumn, $id)
+{
+    $sql = "DELETE FROM $table WHERE $idColumn = :val";
+
+    return executeSQL($sql, [':val', $id]);
 }
 
 function getFiles(string $key)
